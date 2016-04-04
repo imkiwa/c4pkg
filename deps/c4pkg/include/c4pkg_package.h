@@ -10,7 +10,7 @@ typedef struct c4pkg_package_info_s* pkginfo_t;
 struct c4pkg_package_info_s
 {
   /**
-   * Package's primary info.
+   * primary info.
    */
   char *p_name;
   size_t p_name_length;
@@ -19,16 +19,22 @@ struct c4pkg_package_info_s
   size_t p_desc_length;
   
   /**
-   * Package's version.
+   * version.
    */
   int p_major;
   int p_minor;
   int p_patch;
   
   /**
-   * Package's flag
+   * flag
    */
   bool installed;
+  
+  /**
+   * dependencies
+   */
+  int p_dep_count;
+  pkginfo_t *p_deps;
 };
 
 struct c4pkg_package_s

@@ -1,10 +1,11 @@
 #pragma once
 
-#define C4PKG_MANIFEST_NAME "package"
-#define C4PKG_MANIFEST_DESC "description"
+#define C4PKG_MANIFEST_NAME  "package"
+#define C4PKG_MANIFEST_DESC  "description"
 #define C4PKG_MANIFEST_MAJOR "major-version"
 #define C4PKG_MANIFEST_MINOR "minor-version"
 #define C4PKG_MANIFEST_PATCH "patch-version"
+#define C4PKG_MANIFEST_DEPS  "dependencies"
 
 pkginfo_t pkginfo_parse_buffer(const char *buffer);
 

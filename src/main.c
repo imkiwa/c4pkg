@@ -2,6 +2,17 @@
 
 #include "c4pkg.h"
 
+void print_info(pkginfo_t i)
+{
+  printf("name: %s\n"
+         "desc: %s\n"
+         "major: %d\n"
+         "minor: %d\n"
+         "patch: %d\n", 
+   i->p_name, i->p_desc,
+   i->p_major, i->p_minor, i->p_patch);
+}
+
 int main(int argc, char **argv)
 { 
   zipfile_t zip = zip_open_file(argv[1]);
@@ -31,7 +42,11 @@ int main(int argc, char **argv)
     return 0;
   }
   
-  printf("name: %s\ndesc: %s\nmajor: %d\nminor:%d\npatch: %d\n", i->p_name, i->p_desc, i->p_major, i->p_minor, i->p_patch);
+  print_info(i);
+  for (int n=0; n<i->p_dep_count; ++n) {
+    printf("=======\n");
+    print_info(i->p_deps[n]);
+  }
   
   pkginfo_delete(i);
   zip_close(zip);

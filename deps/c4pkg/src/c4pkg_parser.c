@@ -19,24 +19,26 @@ static void pkginfo_set_error(const char *fmt, ...)
 
 static pkginfo_t pkginfo_new()
 {
-  return (pkginfo_t) malloc(sizeof(struct c4pkg_package_info_s));
+  pkginfo_t i = (pkginfo_t) malloc(sizeof(struct c4pkg_package_info_s));
+  if (!i) {
+    return NULL;
+  }
+  
+  memset(i, '\0', sizeof(struct c4pkg_package_info_s));
+  return i;
 }
 
-pkginfo_t pkginfo_parse_buffer(const char *buffer)
+static pkginfo_t pkginfo_parse_internal(cJSON *root, bool check_deps)
 {
-  cJSON *root = cJSON_Parse(buffer);
   if (!root) {
-    pkginfo_set_error("Failed to parse manifest: %s", cJSON_GetErrorPtr());
-    goto fail;
+    return NULL;
   }
   
   pkginfo_t info = pkginfo_new();
   if (!info) {
-    pkginfo_set_error("Failed to allocate memory");
+    pkginfo_set_error("Internal Error: Failed to allocate memory for package.");
     goto fail;
   }
-  
-  info->installed = false;
   
   // reusable pointer.
   cJSON *node = NULL;
@@ -56,6 +58,7 @@ pkginfo_t pkginfo_parse_buffer(const char *buffer)
   }
   // Don't free(node);
   // It will be released automatically in cJSON_Delete(root);
+  
   
   // read package's primary info: description
   node = cJSON_GetObjectItem(root, C4PKG_MANIFEST_DESC);
@@ -96,18 +99,62 @@ pkginfo_t pkginfo_parse_buffer(const char *buffer)
   
   info->p_patch = node->valueint;
   
-  cJSON_Delete(root);
+  // read dependencies
+  if (check_deps 
+   && (node = cJSON_GetObjectItem(root, C4PKG_MANIFEST_DEPS))
+   && node->type == cJSON_Array
+   && (info->p_dep_count = cJSON_GetArraySize(node)) > 0) {
+    
+    // allocate memory for dependencies
+    info->p_deps = (pkginfo_t*) malloc(sizeof(pkginfo_t) * info->p_dep_count);
+    
+    if (!info->p_deps) {
+      pkginfo_set_error("Internal Error: Failed to allocate memory for dependencies.");
+      goto fail;
+    }
+    
+    memset(info->p_deps, '\0', sizeof(struct c4pkg_package_info_s) * info->p_dep_count);
+    
+    cJSON *dep = NULL;
+    for (int i=0; i<info->p_dep_count; ++i) {
+      dep = cJSON_GetArrayItem(node, i);
+      if (!dep) {
+        pkginfo_set_error("Failed to get json string for dependence #%d", i);
+        goto fail;
+      }
+      
+      // No need to check dependencies' dependencies
+      info->p_deps[i] = pkginfo_parse_internal(dep, false);
+      if (!info->p_deps[i]) {
+        pkginfo_set_error("Failed to parse info for dependence #%d", i);
+        goto fail;
+      }
+    }
+  }
+  
+  /////
   return info;
 
 fail:
-  if (root) {
-    cJSON_Delete(root);
-  }
   if (info) {
     pkginfo_delete(info);
   }
   
   return NULL;
+}
+
+pkginfo_t pkginfo_parse_buffer(const char *buffer)
+{
+  cJSON *root = cJSON_Parse(buffer);
+  if (!root) {
+    pkginfo_set_error("Failed to parse manifest: %s", cJSON_GetErrorPtr());
+    return NULL;
+  }
+  
+  pkginfo_t info = pkginfo_parse_internal(root, true);
+  
+  cJSON_Delete(root);
+  return info;
 }
 
 pkginfo_t pkginfo_parse_file(const char *path)
@@ -156,6 +203,12 @@ void pkginfo_delete(pkginfo_t info)
   
   if (info->p_desc && info->p_desc_length > 0) {
     free(info->p_desc);
+  }
+  
+  if (info->p_deps) {
+    for (int i=0; i<info->p_dep_count; ++i) {
+      pkginfo_delete(info->p_deps[i]);
+    }
   }
   
   free(info);
