@@ -15,32 +15,13 @@ void print_info(pkginfo_t i)
 
 int main(int argc, char **argv)
 { 
-  zipfile_t zip = zip_open_file(argv[1]);
-  if (!zip) {
-    printf("Error: zip_open_file\n");
+  package_t pkg = package_open_file(argv[1]);
+  if (!pkg) {
+    printf("package_open_file: %s\n", package_get_error());
     return 0;
   }
   
-  zipentry_t e = zip_lookup(zip, "manifest.json");
-  if (!e) {
-    printf("Error: zip_lookup\n");
-    zip_close(zip);
-    return 0;
-  }
-  
-  size_t sz = zipentry_get_size(e);
-  char *buffer = (char*) malloc(sz+1);
-  zipentry_decompress(e, buffer, sz);
-  buffer[sz] = '\0';
-  
-  pkginfo_t i = pkginfo_parse_buffer(buffer);
-  free(buffer);
-  
-  if (!i) {
-    printf("Error: pkginfo_parse_buffer: %s\n", pkginfo_get_error());
-    zip_close(zip);
-    return 0;
-  }
+  pkginfo_t i = package_get_info(pkg);
   
   print_info(i);
   for (int n=0; n<i->p_dep_count; ++n) {
@@ -48,7 +29,6 @@ int main(int argc, char **argv)
     print_info(i->p_deps[n]);
   }
   
-  pkginfo_delete(i);
-  zip_close(zip);
+  package_close(pkg);
   return 0;
 }

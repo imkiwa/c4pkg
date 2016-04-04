@@ -1,11 +1,17 @@
 #pragma once
 
+#define C4PKG_MANIFEST "manifest.json"
+
 #define C4PKG_MANIFEST_NAME  "package"
 #define C4PKG_MANIFEST_DESC  "description"
 #define C4PKG_MANIFEST_MAJOR "major-version"
 #define C4PKG_MANIFEST_MINOR "minor-version"
 #define C4PKG_MANIFEST_PATCH "patch-version"
 #define C4PKG_MANIFEST_DEPS  "dependencies"
+
+#include "error_utils.h"
+
+ERROR_BUFFER_DEF(pkginfo);
 
 pkginfo_t pkginfo_parse_buffer(const char *buffer);
 

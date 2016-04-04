@@ -7,15 +7,7 @@
 #include "buffer_utils.h"
 #include "cJSON.h"
 
-static char error_buffer[1024] = {0};
-
-static void pkginfo_set_error(const char *fmt, ...)
-{
-  va_list arg;
-  va_start(arg, fmt);
-  vsnprintf(error_buffer, sizeof(error_buffer), fmt, arg);
-  va_end(arg);
-}
+ERROR_BUFFER(pkginfo);
 
 static pkginfo_t pkginfo_new()
 {
@@ -213,9 +205,3 @@ void pkginfo_delete(pkginfo_t info)
   
   free(info);
 }
-
-const char* pkginfo_get_error()
-{
-  return error_buffer;
-}
-

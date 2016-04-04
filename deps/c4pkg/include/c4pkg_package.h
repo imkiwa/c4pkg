@@ -4,6 +4,9 @@
 #include <string.h>
 #include <stdbool.h>
 
+#include "c4pkg_zip.h"
+#include "error_utils.h"
+
 typedef struct c4pkg_package_s* package_t;
 typedef struct c4pkg_package_info_s* pkginfo_t;
 
@@ -39,7 +42,7 @@ struct c4pkg_package_info_s
 
 struct c4pkg_package_s
 {
-  int p_fd;
+  zipfile_t zip;
   
   /**
    * User cookie.
@@ -51,6 +54,8 @@ struct c4pkg_package_s
 
 #include "c4pkg_parser.h"
 
+
+ERROR_BUFFER_DEF(package);
 
 /**
  * Get package info from package_t.
@@ -122,6 +127,13 @@ package_t package_open_fp(FILE *fp);
  * return NULL if something	 goes wrong.
  */
 package_t package_open_fd(int fd);
+
+
+/**
+ * Open a package from buffer,
+ * return NULL if something goes wrong.
+ */
+package_t package_open_buffer(const char *buffer, size_t bufsz);
 
 
 /**
