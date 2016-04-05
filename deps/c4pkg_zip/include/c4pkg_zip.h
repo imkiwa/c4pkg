@@ -1,13 +1,20 @@
 #pragma once
 
 #include <stdio.h>
+#include <stdbool.h>
+
 #include "zipfile/zipfile.h"
+#include "error_utils.h"
+
+ERROR_BUFFER_DEF(zip);
 
 zipfile_t zip_open_file(const char *path);
 
 zipfile_t zip_open_fp(FILE *fp);
 
 zipfile_t zip_open_fd(int fd);
+
+int zip_get_entry_count(zipfile_t zip);
 
 static inline zipfile_t zip_open_buffer(const char *buffer, size_t sz)
 {
@@ -28,6 +35,8 @@ static inline zipentry_t zip_lookup(zipfile_t zip, const char *name)
 {
   return lookup_zipentry(zip, name);
 }
+
+bool zipentry_extract_to(zipentry_t entry, const char *dir);
 
 static inline size_t zipentry_get_size(zipentry_t e)
 {

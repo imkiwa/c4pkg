@@ -31,7 +31,7 @@ struct c4pkg_package_info_s
   /**
    * flag
    */
-  bool installed;
+  bool p_inst;
   
   /**
    * dependencies
@@ -48,6 +48,12 @@ struct c4pkg_package_s
    * User cookie.
    */
   void *cookie;
+  
+  /**
+   * contents
+   */
+  int p_file_count;
+  char **p_files;
   
   pkginfo_t p_info;
 };

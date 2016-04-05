@@ -116,5 +116,13 @@ void package_close(package_t pkg)
     pkginfo_delete(pkg->p_info);
   }
   
+  if (pkg->p_files) {
+    for (int i=0; i<pkg->p_file_count; ++i) {
+      if (pkg->p_files[i]) {
+        free(pkg->p_files[i]);
+      }
+    }
+  }
+  
   free(pkg);
 }

@@ -14,7 +14,8 @@ void print_info(pkginfo_t i)
 }
 
 int main(int argc, char **argv)
-{ 
+{
+  /*
   package_t pkg = package_open_file(argv[1]);
   if (!pkg) {
     printf("package_open_file: %s\n", package_get_error());
@@ -30,5 +31,8 @@ int main(int argc, char **argv)
   }
   
   package_close(pkg);
+  */
+  
+  c4pkg_install_file(argv[1]);
   return 0;
 }
