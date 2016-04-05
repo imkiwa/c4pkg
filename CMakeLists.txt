@@ -1,5 +1,7 @@
 cmake_minimum_required (VERSION 2.6)
 
+PROJECT (c4pkg)
+
 set (CMAKE_C_FLAGS "-fPIC --pie -std=c99 -g")
 set (CMAKE_EXE_LINKER_FLAGS "-fPIC --pie")
 
@@ -27,3 +29,21 @@ add_executable (c4pkg-cli
 target_link_libraries (c4pkg-cli
     c4pkg
   )
+
+
+install (
+  TARGETS c4pkg-cli
+  
+  RUNTIME DESTINATION bin
+  LIBRARY DESTINATION lib
+  ARCHIVE DESTINATION lib
+)
+
+install (
+  DIRECTORY include docs
+  
+  DESTINATION .
+  
+  PATTERN "*.h"
+  PERMISSIONS OWNER_WRITE OWNER_READ GROUP_READ
+)

@@ -5,3 +5,21 @@ add_library  (cJSON
 target_link_libraries (cJSON
     m
   )
+
+install (
+  TARGETS cJSON
+  
+  RUNTIME DESTINATION bin
+  LIBRARY DESTINATION lib
+  ARCHIVE DESTINATION lib
+)
+
+install (
+  DIRECTORY include
+  
+  DESTINATION .
+  
+  PATTERN "*.h"
+  PERMISSIONS OWNER_WRITE OWNER_READ GROUP_READ
+)
+
