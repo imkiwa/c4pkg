@@ -89,17 +89,9 @@ bool zipentry_extract_to(zipentry_t entry, const char *dir)
     return r;
   }
   
-  char *slash = strrchr(dest_path, '/');
-  // split path and file name
-  *slash = '\0';
-  
-  // create parent directory
-  if (!mkdir_recursive(dest_path, 0755)) {
+  if (!mkdir_parent(dest_path, 0755)) {
     goto fail;
   }
-  
-  // restore it
-  *slash = '/';
   
   FILE *dest = fopen(dest_path, "wb");
   if (!dest) {

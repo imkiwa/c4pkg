@@ -3,6 +3,7 @@
 
 #include "c4pkg.h"
 #include "buffer_utils.h"
+#include "fs_utils.h"
 
 #define CALL(fn, arg...) \
   if (fn) { fn(arg); }
@@ -20,6 +21,47 @@ static void c4pkg_default_opt(inst_opt_t *opt)
   opt->print_fn = printf;
 }
 
+static void c4pkg_install_fix_permission()
+{
+  chmod_recursive(C4PKG_PKG_BIN_PATH, 0755, false);
+}
+
+static bool c4pkg_install_dump_pkg_info(package_t pkg, const char *list_path, const char *mani_path)
+{
+  FILE *lf = fopen(list_path, "w");
+  if (!lf) {
+    install_set_error("Failed to open '%s'", list_path);
+    return false;
+  }
+  
+  FILE *mf = fopen(mani_path, "w");
+  if (!mf) {
+    install_set_error("Failed to open '%s'", mani_path);
+    goto fail;
+  }
+  
+  if (!c4pkg_list_dump_file(lf, pkg)) {
+    install_set_error("Failed to dump file list");
+    goto fail;
+  }
+  
+  pkginfo_t i = package_get_info(pkg);
+  fwrite(i->p_mnfs, i->p_mnfs_length, 1, mf);
+  
+  fclose(lf);
+  fclose(mf);
+  return true;
+  
+fail:
+  if (lf) {
+    fclose(lf);
+  }
+  if (mf) {
+    fclose(mf);
+  }
+  return false;
+}
+
 static bool c4pkg_install_rollback(package_t pkg)
 {
   return true;
@@ -33,9 +75,10 @@ static bool c4pkg_install_internal(inst_opt_t *opt, package_t pkg, zipfile_t dat
     goto fail;
   }
   
-  pkg->p_file_count = count;
-  pkg->p_files = (char**) malloc(sizeof(char*) * count);
-  if (!pkg->p_files) {
+  pkginfo_t info = package_get_info(pkg);
+  info->p_file_count = count;
+  info->p_files = (char**) malloc(sizeof(char*) * count);
+  if (!info->p_files) {
     install_set_error("Internal Error: Failed to allocate memory for file list");
     goto fail;
   }
@@ -45,21 +88,53 @@ static bool c4pkg_install_internal(inst_opt_t *opt, package_t pkg, zipfile_t dat
   int sec = 0;
   
   while (zip_foreach(data_zip, (void**) &e)) {
-    pkg->p_files[index] = strdup(zipentry_get_name(e));
-    if (!pkg->p_files[index]) {
+    info->p_files[index] = strdup(zipentry_get_name(e));
+    if (!info->p_files[index]) {
       install_set_error("Internal Errno: Failed to copy zip entry name");
       goto rollback;
     }
     
     if (!zipentry_extract_to(e, opt->o_inst_dir)) {
-      install_set_error("Internal Error: Failed to extract '%s'", pkg->p_files[index]);
+      install_set_error("Internal Error: Failed to extract '%s'", info->p_files[index]);
       goto rollback;
     }
     
     index++;
   }
   
+  char *list_dir = c4pkg_get_list_dir(package_get_name(pkg));
+  char *list_path = c4pkg_get_list_file(package_get_name(pkg));
+  char *mani_path = c4pkg_get_manifest_file(package_get_name(pkg));
+  
+  if (!list_dir || !list_path || !mani_path) {
+    install_set_error("Failed to get package info file");
+    goto rollback;
+  }
+  
+  if (!mkdir_recursive(list_dir, 0755)) {
+    install_set_error("Failed to mkdir for package info");
+    goto rollback_free;
+  }
+  
+  if (!c4pkg_install_dump_pkg_info(pkg, list_path, mani_path)) {
+    goto rollback_free;
+  }
+  
+  // set executable permission for binaries
+  c4pkg_install_fix_permission();
+  
   return true;
+
+rollback_free:
+  if (list_path) {
+    free(list_path);
+  }
+  if (list_dir) {
+    free(list_dir);
+  }
+  if (mani_path) {
+    free(mani_path);
+  }
   
 rollback:
   while (!c4pkg_install_rollback(pkg)) {
@@ -105,7 +180,7 @@ bool c4pkg_install_with_opt(inst_opt_t *opt)
   int (*pfn)(const char*, ...) = opt->print_fn;
   
   if (opt->o_src_length == 0) {
-    install_set_error("Invalid length of o_uri");
+    install_set_error("Invalid length of o_src");
     CALLE(pfn);
     goto fail;
   }

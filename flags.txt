@@ -1,0 +1,1 @@
+-I/data/data/com.n0n3m4.droidc/c4pkg/packages/include -L/data/data/com.n0n3m4.droidc/c4pkg/packages/lib -lz -lm -lc4pkg -lc4pkg_zip -lc4pkg_utils -lcJSON

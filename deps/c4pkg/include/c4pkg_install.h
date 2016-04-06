@@ -1,10 +1,11 @@
+#pragma once
+
 #include <stdio.h>
 #include <stdbool.h>
 
 #include "c4pkg_zip.h"
+#include "c4pkg_config.h"
 #include "error_utils.h"
-
-#define C4PKG_DATA_ZIP "data.zip"
 
 ERROR_BUFFER_DEF(install);
 

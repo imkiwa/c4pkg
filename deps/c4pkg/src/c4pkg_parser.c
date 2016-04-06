@@ -144,9 +144,27 @@ pkginfo_t pkginfo_parse_buffer(const char *buffer)
   }
   
   pkginfo_t info = pkginfo_parse_internal(root, true);
+  if (!info) {
+    goto fail;
+  }
+  
+  info->p_mnfs = strdup(buffer);
+  info->p_mnfs_length = strlen(buffer);
+  
+  if (!info->p_mnfs) {
+    pkginfo_set_error("Internal Error: Failed to dump the content of '" C4PKG_MANIFEST "'");
+    goto fail;
+  }
   
   cJSON_Delete(root);
   return info;
+  
+fail:
+  if (info) {
+    pkginfo_delete(info);
+  }
+  cJSON_Delete(root);
+  return NULL;
 }
 
 pkginfo_t pkginfo_parse_file(const char *path)
@@ -197,9 +215,21 @@ void pkginfo_delete(pkginfo_t info)
     free(info->p_desc);
   }
   
+  if (info->p_mnfs && info->p_mnfs_length > 0) {
+    free(info->p_mnfs);
+  }
+  
   if (info->p_deps) {
     for (int i=0; i<info->p_dep_count; ++i) {
       pkginfo_delete(info->p_deps[i]);
+    }
+  }
+  
+  if (info->p_files) {
+    for (int i=0; i<info->p_file_count; ++i) {
+      if (info->p_files[i]) {
+        free(info->p_files[i]);
+      }
     }
   }
   

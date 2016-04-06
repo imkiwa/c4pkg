@@ -47,3 +47,9 @@ install (
   PATTERN "*.h"
   PERMISSIONS OWNER_WRITE OWNER_READ GROUP_READ
 )
+
+install (
+  FILES flags.txt
+  
+  DESTINATION .
+)

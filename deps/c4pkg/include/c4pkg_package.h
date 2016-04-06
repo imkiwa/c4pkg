@@ -22,6 +22,12 @@ struct c4pkg_package_info_s
   size_t p_desc_length;
   
   /**
+   * the content of manifest.json
+   */
+  char *p_mnfs;
+  size_t p_mnfs_length;
+  
+  /**
    * version.
    */
   int p_major;
@@ -38,6 +44,12 @@ struct c4pkg_package_info_s
    */
   int p_dep_count;
   pkginfo_t *p_deps;
+  
+  /**
+   * contents
+   */
+  int p_file_count;
+  char **p_files;
 };
 
 struct c4pkg_package_s
@@ -48,12 +60,6 @@ struct c4pkg_package_s
    * User cookie.
    */
   void *cookie;
-  
-  /**
-   * contents
-   */
-  int p_file_count;
-  char **p_files;
   
   pkginfo_t p_info;
 };
@@ -143,13 +149,7 @@ package_t package_open_buffer(const char *buffer, size_t bufsz);
 
 
 /**
- * Read package info from manifest_path,
- * return NULL if something goes wrong.
- */
-package_t package_open_installed(const char *manifest_path);
-
-
-/**
  * Close and release package.
  */
 void package_close(package_t pkg);
+
