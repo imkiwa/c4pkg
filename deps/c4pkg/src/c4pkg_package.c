@@ -1,6 +1,8 @@
 #include "c4pkg.h"
 #include "buffer_utils.h"
 
+#include "private/package.h"
+
 ERROR_BUFFER(package);
 
 package_t package_new()

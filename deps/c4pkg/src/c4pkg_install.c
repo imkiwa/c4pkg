@@ -164,17 +164,17 @@ bool c4pkg_install_with_opt(inst_opt_t *opt)
     return false;
   }
   
-  // only support SRC_STREAM,
-  // c4pkg_install_git/file will convert SRC_GIT/SRC_FILE to SRC_STREAM.
-  if (opt->o_src_type != SRC_STREAM) {
-    switch (opt->o_src_type) {
-      case SRC_GIT:
-        return c4pkg_install_git(opt->o_src);
-      case SRC_FILE:
-        return c4pkg_install_file(opt->o_src);
+  // only support SCHEMA_LOCAL,
+  // c4pkg_install_git/file will convert SCHEMA_FILE/GIT to SCHEMA_LOCAL.
+  if (opt->o_schema.s_type != SCHEMA_LOCAL) {
+    switch (opt->o_schema.s_type) {
+      case SCHEMA_GIT:
+        return c4pkg_install_git(opt->o_schema.s_url);
+      case SCHEMA_FILE:
+        return c4pkg_install_file(opt->o_schema.s_url);
     }
     
-    return false;
+    return c4pkg_install(opt->o_src);
   }
   
   int (*pfn)(const char*, ...) = opt->print_fn;
@@ -238,6 +238,43 @@ fail:
   return false;
 }
 
+bool c4pkg_install(const char *url)
+{
+  if (!url) {
+    return NULL;
+  }
+  
+  schema_t sch;
+  if (!c4pkg_schema_parse(url, &sch)) {
+    install_set_error("Failed to parse url: %s", url);
+    return false;
+  }
+  
+  if (!sch.s_url) {
+    install_set_error("Internal Error: Failed to copy string");
+    return false;
+  }
+  
+  bool ret = false;
+  switch (sch.s_type) {
+    case SCHEMA_FILE:
+      ret = c4pkg_install_file(sch.s_url);
+      break;
+    
+    case SCHEMA_GIT:
+      ret = c4pkg_install_git(sch.s_url);
+      break;
+    
+    default:
+      install_set_error("Unsupported schema");
+      ret = false;
+      break;
+  }
+  
+  free(sch.s_url);
+  return ret;
+}
+
 bool c4pkg_install_git(const char *repo)
 {
   printf("Internal Error: c4pkg_install_git not supported.\n");
@@ -249,7 +286,7 @@ bool c4pkg_install_buffer(const char *buffer, size_t bufsz)
   inst_opt_t opt;
   
   c4pkg_default_opt(&opt);
-  opt.o_src_type = SRC_STREAM;
+  opt.o_schema.s_type = SCHEMA_LOCAL;
   opt.o_src = buffer;
   opt.o_src_length = bufsz;
   

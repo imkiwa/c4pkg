@@ -3,6 +3,8 @@ add_library  (c4pkg
     src/c4pkg_package.c
     src/c4pkg_parser.c
     src/c4pkg_list.c
+    src/c4pkg_query.c
+    src/c4pkg_schema.c
   )
 
 target_link_libraries (c4pkg

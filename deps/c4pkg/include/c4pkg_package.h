@@ -120,6 +120,7 @@ static inline bool package_equals(package_t lhs, package_t rhs)
       && package_get_major_version(lhs) == package_get_major_version(rhs);
 }
 
+
 /**
  * Open a package from path,
  * return NULL if something	 goes wrong.
