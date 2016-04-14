@@ -14,7 +14,7 @@ void print_info(package_t pkg)
     printf("dependencies:\n");
     for (int n=0; n<i->p_dep_count; ++n) {
       pkginfo_t d = i->p_deps[n];
-      printf("  #2d %s(%d.%d.%d)\n", n, d->p_name, d->p_major, d->p_minor, d->p_patch);
+      printf("  #%2d %s(%d.%d.%d)\n", n, d->p_name, d->p_major, d->p_minor, d->p_patch);
     }
   }
 }
