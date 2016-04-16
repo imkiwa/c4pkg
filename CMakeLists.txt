@@ -2,7 +2,7 @@ cmake_minimum_required (VERSION 2.6)
 
 PROJECT (c4pkg)
 
-set (CMAKE_C_FLAGS "-fPIC --pie -std=c99 -g")
+set (CMAKE_C_FLAGS "-D_GNU_SOURCE -fPIC --pie -std=c99 -g")
 set (CMAKE_EXE_LINKER_FLAGS "-fPIC --pie")
 
 set (DEP_DIR "${PROJECT_SOURCE_DIR}/deps")

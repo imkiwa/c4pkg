@@ -3,6 +3,9 @@
 #include <sys/stat.h>
 #include <dirent.h>
 #include <limits.h>
+#include <linux/limits.h>
+#include <unistd.h>
+#include <stdlib.h>
 
 #include "fs_utils.h"
 #include "string_utils.h"

@@ -23,4 +23,4 @@ data.zip/
 * `bin/` put all binaries and useful programs here.
 * `docs/` put all documents here. 
 * `include/` put all headers here.
-* `libs/` put all libraries here.
+* `lib/` put all libraries here.
