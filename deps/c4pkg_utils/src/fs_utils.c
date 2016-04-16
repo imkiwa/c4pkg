@@ -65,35 +65,96 @@ bool chmod_recursive(const char *path, mode_t mode, bool include_self)
     return false;
   }
   
+  char *item = NULL;
   while ((e = readdir(dir)) != NULL) {
+    if (!strcmp(e->d_name, ".") || !strcmp(e->d_name, "..")) {
+      continue;
+    }
+    
+    item = string_concat(path, "/", e->d_name, NULL);
+    if (!item) {
+      goto fail;
+    }
+    
     if (e->d_type == DT_REG) {
-      if (chmod(e->d_name, mode) != 0) {
-        closedir(dir);
-        return false;
+      if (chmod(item, mode) != 0) {
+        goto fail;
       }
     
     } else if (e->d_type == DT_DIR) {
-      if (!strcmp(e->d_name, ".") || !strcmp(e->d_name, "..")) {
-        continue;
+      if (chmod_recursive(item, mode, true) != 0) {
+        goto fail;
       }
-      
-      char *next = string_concat(path, "/", e->d_name, NULL);
-      if (!next) {
-        closedir(dir);
-        return false;
-      }
-      
-      int ret = chmod_recursive(next, mode, true);
-      free(next);
-      if (ret != 0) {
-        closedir(dir);
-        return false;
-      }
-    } // DT_DIR
-  } // while
+    }
+    
+    free(item);
+    item = NULL;
+  }
   
   closedir(dir);
   return true;
+
+fail:
+  if (item) {
+    free(item);
+  }
+  closedir(dir);
+  return false;
+}
+
+bool unlink_recursive(const char *path, bool include_self)
+{
+  if (!path) {
+    return false;
+  }
+  
+  DIR *dir;
+  struct dirent *e;
+  dir = opendir(path);
+  if (!dir) {
+    return false;
+  }
+  
+  char *item = NULL;
+  while ((e = readdir(dir)) != NULL) {
+    if (!strcmp(e->d_name, ".") || !strcmp(e->d_name, "..")) {
+      continue;
+    }
+    
+    item = string_concat(path, "/", e->d_name, NULL);
+    if (!item) {
+      goto fail;
+    }
+    
+    if (e->d_type == DT_REG) {
+      if (unlink(item) != 0) {
+        goto fail;
+      }
+    
+    } else if (e->d_type == DT_DIR) {
+      if (unlink_recursive(item, true) != 0) {
+        goto fail;
+      }
+    }
+    
+    free(item);
+    item = NULL;
+  }
+  
+  closedir(dir);
+  
+  if (include_self && rmdir(path) != 0) {
+    return false;
+  }
+  
+  return true;
+
+fail:
+  if (item) {
+    free(item);
+  }
+  closedir(dir);
+  return false;
 }
 
 bool mkdir_parent(const char *cpath, mode_t mode)

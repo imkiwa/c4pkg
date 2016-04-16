@@ -1,5 +1,6 @@
 add_library  (c4pkg
     src/c4pkg_install.c
+    src/c4pkg_remove.c
     src/c4pkg_package.c
     src/c4pkg_parser.c
     src/c4pkg_list.c

@@ -4,6 +4,7 @@
 #include "c4pkg.h"
 #include "buffer_utils.h"
 #include "fs_utils.h"
+#include "string_utils.h"
 
 #define CALL(fn, arg...) \
   if (fn) { fn(arg); }
@@ -76,7 +77,7 @@ static bool c4pkg_install_internal(inst_opt_t *opt, package_t pkg, zipfile_t dat
   }
   
   pkginfo_t info = package_get_info(pkg);
-  info->p_file_count = count;
+  info->p_file_count = 0;
   info->p_files = (char**) malloc(sizeof(char*) * count);
   if (!info->p_files) {
     install_set_error("Internal Error: Failed to allocate memory for file list");
@@ -87,19 +88,44 @@ static bool c4pkg_install_internal(inst_opt_t *opt, package_t pkg, zipfile_t dat
   int index = 0;
   int sec = 0;
   
+  const char *zname = NULL;
+  size_t zsz = 0;
+  bool write = true;
+  
   while (zip_foreach(data_zip, (void**) &e)) {
-    info->p_files[index] = strdup(zipentry_get_name(e));
-    if (!info->p_files[index]) {
-      install_set_error("Internal Errno: Failed to copy zip entry name");
-      goto rollback;
+    zname = zipentry_get_name(e);
+    zsz = strlen(zname);
+    write = true;
+    
+    if (zname[zsz - 1] == '/') {
+      char *n = string_concat(opt->o_inst_dir, "/", zname, NULL);
+      if (!n) {
+        install_set_error("Internal Error: Failed to concat string");
+        goto rollback;
+      }
+      
+      // If dir already exists
+      // we won't write it to list file
+      if (access(n, F_OK) == 0) {
+        write = false;
+      }
+      free(n);
+    }
+    
+    if (write) {
+      info->p_files[index] = strdup(zname);
+      if (!info->p_files[index]) {
+        install_set_error("Internal Errno: Failed to copy zip entry name");
+        goto rollback;
+      }
+      index++;
+      info->p_file_count++;
     }
     
     if (!zipentry_extract_to(e, opt->o_inst_dir)) {
-      install_set_error("Internal Error: Failed to extract '%s'", info->p_files[index]);
+      install_set_error("Internal Error: Failed to extract '%s'", zname);
       goto rollback;
     }
-    
-    index++;
   }
   
   char *list_dir = c4pkg_get_list_dir(package_get_name(pkg));
@@ -220,7 +246,7 @@ bool c4pkg_install_with_opt(inst_opt_t *opt)
     goto fail_close;
   }
   
-  CALL(pfn, "--> package '%s' was successfully installed\n", package_get_name(pkg));
+  printf("=> Package '%s' was successfully installed\n", package_get_name(pkg));
   
   zip_close(data_zip);
   package_close(pkg);

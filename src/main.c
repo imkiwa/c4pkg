@@ -16,7 +16,7 @@ void print_info(package_t pkg)
     printf("=> Package Dependencies\n");
     for (int n=0; n<i->p_dep_count; ++n) {
       pkginfo_t d = i->p_deps[n];
-      printf(" #%2d %s(%d.%d.%d)\n", n, d->p_name, d->p_major, d->p_minor, d->p_patch);
+      printf(" #%-2d %s(%d.%d.%d)\n", n, d->p_name, d->p_major, d->p_minor, d->p_patch);
     }
   }
   
@@ -34,7 +34,7 @@ int main(int argc, char **argv)
     return 0;
   }
   
-  if (strcmp("query", argv[1]) == 0) {
+  if (strcmp("-Q", argv[1]) == 0) {
     package_t pkg = c4pkg_query(argv[2], QUERY_ALL);
     if (!pkg) {
       printf("Failed to query %s: %s\n", argv[2], query_get_error());
@@ -44,6 +44,9 @@ int main(int argc, char **argv)
     print_info(pkg);
     package_close(pkg);
     return 0;
+  
+  } else if (strcmp("-R", argv[1]) == 0) {
+    return c4pkg_remove(argv[2]) ? 0 : 1;
   }
   
   return c4pkg_install_file(argv[1]);

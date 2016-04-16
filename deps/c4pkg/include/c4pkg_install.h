@@ -58,3 +58,4 @@ bool c4pkg_install_fp(FILE *fp);
 bool c4pkg_install_fd(int fd);
 
 bool c4pkg_install_buffer(const char *buffer, size_t bufsz);
+

@@ -2,6 +2,7 @@
 
 set -e
 
+cd $(dirname $(readlink -f $0))
 mkdir -p build
 cd build
 
