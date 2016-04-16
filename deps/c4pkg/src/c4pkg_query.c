@@ -34,7 +34,19 @@ package_t c4pkg_query(const char *name, int flags)
   }
   
   if (flags & QUERY_FILES) {
-    // TODO
+    FILE *fp = fopen(list_path, "r");
+    if (!fp) {
+      query_set_error("Failed to open list file '%s'", list_path);
+      goto fail;
+    }
+    
+    if (!c4pkg_list_read_file(fp, pkg)) {
+      query_set_error("Failed to read List file");
+      fclose(fp);
+      goto fail;
+    }
+    
+    fclose(fp);
   }
   
   return pkg;
