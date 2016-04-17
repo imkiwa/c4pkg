@@ -1,8 +1,7 @@
 #!/system/bin/bash
 
-set -e
+source $(dirname $(readlink -f $0))/common.sh
 
-cd $(dirname $(readlink -f $0))
 mkdir -p build
 cd build
 
