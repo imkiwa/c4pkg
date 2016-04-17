@@ -37,7 +37,6 @@ add_subdirectory ("${SRC_apollo_getopt}")
 
 add_executable (c4pkg-cli
     src/main.c
-    src/test.c
   )
 target_link_libraries (c4pkg-cli
     c4pkg apollo_getopt
