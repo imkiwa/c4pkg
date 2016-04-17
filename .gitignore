@@ -1,6 +1,3 @@
 build/
-*.[oa]
-*.test
-
 pkgfiles/data/
 
