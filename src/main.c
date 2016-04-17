@@ -40,7 +40,12 @@ int main(int argc, char **argv)
   
   } else if (strcmp("-R", argv[1]) == 0) {
     return c4pkg_remove(argv[2]) ? 0 : 1;
+    
+  } else if (strcmp("-S", argv[1]) == 0) {
+    if (!c4pkg_install_file(argv[2])) {
+      printf("%s\n", install_get_error());
+    }
   }
   
-  return c4pkg_install_file(argv[1]);
+  return 0;
 }

@@ -46,7 +46,7 @@ package_t c4pkg_query(const char *name, int flags)
   if (flags & QUERY_MANIFEST) {
     pkg->p_info = pkginfo_parse_file(mani_path);
     if (!pkg->p_info) {
-      query_set_error("%s", pkginfo_get_error());
+      query_set_error("Package '%s' is not installed", name);
       goto fail;
     }
   }

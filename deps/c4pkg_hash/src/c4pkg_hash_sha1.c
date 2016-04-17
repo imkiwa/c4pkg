@@ -69,14 +69,17 @@ char* c4pkg_hash_to_string(uint8_t *digest, int len)
     return NULL;
   }
   
+  static char buf[3] = {0};
   int need = len * 2 + 1; // '\0';
   char *str = (char*) malloc(sizeof(char) * need);
   if (!str) {
     return NULL;
   }
   
+  memset(str, '\0', sizeof(char) * need);
   for (int i=0; i<len; ++i) {
-    snprintf(str+i, 3, "%02x", digest[i]);
+    snprintf(buf, 3, "%02x", digest[i]);
+    strcat(str, buf);
   }
   
   return str;
