@@ -2,4 +2,5 @@ build/
 *.[oa]
 *.test
 
-dist/
+pkgfiles/data/
+

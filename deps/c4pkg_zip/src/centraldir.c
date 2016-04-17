@@ -1,9 +1,9 @@
-#include "private.h"
+#include "private/zip.h"
 #include <stdio.h>
 #include <string.h>
 #include <stdlib.h>
 
-#include <utils/Compat.h>
+#include "utils/Compat.h"
 
 enum {
     // finding the directory

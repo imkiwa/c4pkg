@@ -2,6 +2,7 @@
 #include <string.h>
 
 #include "c4pkg.h"
+#include "c4pkg_hash.h"
 #include "buffer_utils.h"
 #include "fs_utils.h"
 #include "string_utils.h"
@@ -25,6 +26,15 @@ static void c4pkg_default_opt(inst_opt_t *opt)
 static void c4pkg_install_fix_permission()
 {
   chmod_recursive(C4PKG_PKG_BIN_PATH, 0755, false);
+}
+
+static bool c4pkg_install_checkpkg(package_t pkg, const char *digest)
+{
+  if (strcmp(digest, package_get_info(pkg)->p_checksum) == 0) {
+    return true;
+  }
+  
+  return false;
 }
 
 static bool c4pkg_install_dump_pkg_info(package_t pkg, const char *list_path, const char *mani_path)
@@ -235,6 +245,21 @@ bool c4pkg_install_with_opt(inst_opt_t *opt)
   zipentry_decompress(data, buffer, sz);
   buffer[sz] = '\0';
   
+  // check checksum
+  char *digest = c4pkg_hash_sha1_string(buffer, sz);
+  if (!digest) {
+    install_set_error("Failed to generate sha1 checksum");
+    goto fail;
+  }
+  
+  if (!c4pkg_install_checkpkg(pkg, digest)) {
+    free(digest);
+    install_set_error("Package validation failed");
+    goto fail;
+  }
+  free(digest);
+  
+  // open data.zip
   zipfile_t data_zip = zip_open_buffer(buffer, sz);
   if (!data_zip) {
     install_set_error("Failed to open decompressed '" C4PKG_DATA_ZIP "' buffer");

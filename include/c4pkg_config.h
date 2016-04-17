@@ -25,3 +25,4 @@
 #define C4PKG_MANIFEST_MINOR "minor-version"
 #define C4PKG_MANIFEST_PATCH "patch-version"
 #define C4PKG_MANIFEST_DEPS  "dependencies"
+#define C4PKG_MANIFEST_CHECKSUM "checksum"

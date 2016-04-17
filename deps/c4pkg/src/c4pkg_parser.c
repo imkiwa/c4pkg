@@ -91,6 +91,15 @@ static pkginfo_t pkginfo_parse_internal(cJSON *root, bool check_deps)
   
   info->p_patch = node->valueint;
   
+  // read checksum
+  node = cJSON_GetObjectItem(root, C4PKG_MANIFEST_CHECKSUM);
+  if (!node || node->type != cJSON_String) {
+    pkginfo_set_error("No '" C4PKG_MANIFEST_CHECKSUM "' was found in manifest or it's not a string value!");
+    goto fail;
+  }
+  
+  info->p_checksum = strdup(node->valuestring);
+  
   // read dependencies
   if (check_deps 
    && (node = cJSON_GetObjectItem(root, C4PKG_MANIFEST_DEPS))
@@ -213,6 +222,10 @@ void pkginfo_delete(pkginfo_t info)
   
   if (info->p_desc && info->p_desc_length > 0) {
     free(info->p_desc);
+  }
+  
+  if (info->p_checksum) {
+    free(info->p_checksum);
   }
   
   if (info->p_mnfs && info->p_mnfs_length > 0) {

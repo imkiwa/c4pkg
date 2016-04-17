@@ -11,17 +11,20 @@ set (SRC_cJSON "${DEP_DIR}/cJSON")
 set (SRC_c4pkg "${DEP_DIR}/c4pkg")
 set (SRC_c4pkg_utils "${DEP_DIR}/c4pkg_utils")
 set (SRC_c4pkg_zip "${DEP_DIR}/c4pkg_zip")
+set (SRC_c4pkg_hash "${DEP_DIR}/c4pkg_hash")
 
 include_directories ("${PROJECT_SOURCE_DIR}/include")
 include_directories ("${SRC_c4pkg}/include")
 include_directories ("${SRC_c4pkg_utils}/include")
 include_directories ("${SRC_c4pkg_zip}/include")
+include_directories ("${SRC_c4pkg_hash}/include")
 include_directories ("${SRC_cJSON}/include")
 
 add_subdirectory ("${SRC_cJSON}")
 add_subdirectory ("${SRC_c4pkg}")
 add_subdirectory ("${SRC_c4pkg_utils}")
 add_subdirectory ("${SRC_c4pkg_zip}")
+add_subdirectory ("${SRC_c4pkg_hash}")
 
 add_executable (c4pkg-cli
     src/main.c

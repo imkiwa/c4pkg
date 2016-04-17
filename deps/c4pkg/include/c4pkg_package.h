@@ -5,52 +5,12 @@
 #include <stdbool.h>
 
 #include "c4pkg_zip.h"
+#include "c4pkg_parser.h"
 #include "error_utils.h"
 
-typedef struct c4pkg_package_s* package_t;
-typedef struct c4pkg_package_info_s* pkginfo_t;
+ERROR_BUFFER_DEF(package);
 
-struct c4pkg_package_info_s
-{
-  /**
-   * primary info.
-   */
-  char *p_name;
-  size_t p_name_length;
-  
-  char *p_desc;
-  size_t p_desc_length;
-  
-  /**
-   * the content of manifest.json
-   */
-  char *p_mnfs;
-  size_t p_mnfs_length;
-  
-  /**
-   * version.
-   */
-  int p_major;
-  int p_minor;
-  int p_patch;
-  
-  /**
-   * flag
-   */
-  bool p_inst;
-  
-  /**
-   * dependencies
-   */
-  int p_dep_count;
-  pkginfo_t *p_deps;
-  
-  /**
-   * contents
-   */
-  int p_file_count;
-  char **p_files;
-};
+typedef struct c4pkg_package_s* package_t;
 
 struct c4pkg_package_s
 {
@@ -64,10 +24,6 @@ struct c4pkg_package_s
   pkginfo_t p_info;
 };
 
-#include "c4pkg_parser.h"
-
-
-ERROR_BUFFER_DEF(package);
 
 /**
  * Get package info from package_t.

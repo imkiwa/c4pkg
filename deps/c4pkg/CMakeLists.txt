@@ -1,4 +1,5 @@
 add_library  (c4pkg
+    src/c4pkg_common.c
     src/c4pkg_install.c
     src/c4pkg_remove.c
     src/c4pkg_package.c
@@ -9,7 +10,7 @@ add_library  (c4pkg
   )
 
 target_link_libraries (c4pkg
-    cJSON c4pkg_zip c4pkg_utils
+    cJSON c4pkg_zip c4pkg_utils c4pkg_hash
   )
 
 install (

@@ -1,6 +1,6 @@
-#include <zipfile/zipfile.h>
+#include "zipfile/zipfile.h"
 
-#include "private.h"
+#include "private/zip.h"
 #include <stdlib.h>
 #include <string.h>
 #include <zlib.h>

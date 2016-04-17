@@ -1,7 +1,7 @@
 #include "c4pkg_zip.h"
 #include "buffer_utils.h"
 #include "fs_utils.h"
-#include "private.h"
+#include "private/zip.h"
 
 ERROR_BUFFER(zip);
 

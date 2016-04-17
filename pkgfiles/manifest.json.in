@@ -6,6 +6,8 @@
   "minor-version": 0,
   "patch-version": 0,
   
+  "checksum": "<CHECKSUM>",
+  
   "dependencies": [
     
   ]
