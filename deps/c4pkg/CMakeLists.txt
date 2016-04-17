@@ -10,7 +10,7 @@ add_library  (c4pkg
   )
 
 target_link_libraries (c4pkg
-    cJSON c4pkg_zip c4pkg_utils c4pkg_hash
+    c4pkg_net cJSON c4pkg_zip c4pkg_utils c4pkg_hash
   )
 
 install (

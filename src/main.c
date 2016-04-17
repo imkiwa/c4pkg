@@ -45,6 +45,9 @@ int main(int argc, char **argv)
     if (!c4pkg_install_file(argv[2])) {
       printf("%s\n", install_get_error());
     }
+  } else if (strcmp("-T", argv[1]) == 0) {
+    extern void test(const char*);
+    test(argv[2]);
   }
   
   return 0;
