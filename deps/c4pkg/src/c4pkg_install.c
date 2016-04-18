@@ -336,7 +336,7 @@ bool c4pkg_install_with_opt(inst_opt_t *opt)
     goto fail_close;
   }
   
-  printf("=> Package '%s' was successfully installed\n", package_get_name(pkg));
+  printf(":: Package '%s' was successfully installed\n", package_get_name(pkg));
   
   zip_close(data_zip);
   package_close(pkg);
@@ -393,7 +393,7 @@ bool c4pkg_install(const char *url)
 
 bool c4pkg_install_git(const char *repo)
 {
-  CALL("=> Downloading packages from github\n");
+  CALL(":: Downloading packages from github\n");
   return c4pkg_install_git_quiet(repo);
 }
 
@@ -415,7 +415,7 @@ bool c4pkg_install_file(const char *path)
     return false;
   }
   
-  printf("=> Installing %s\n", path);
+  printf(":: Installing %s\n", path);
   int fd = open(path, O_RDONLY);
   if (fd < 0) {
     return false;
