@@ -52,6 +52,7 @@ static bool c4pkg_install_git_quiet(const char *repo)
     return false;
   }
   
+  printf("\n");
   bool ret = c4pkg_install_file(file);
   unlink(file);
   free(file);
