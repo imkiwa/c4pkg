@@ -26,10 +26,17 @@ ERROR_BUFFER(zip);
 zipfile_t zip_open_file(const char *path)
 {
   if (!path) {
-    return NULL;
+    return false;
   }
   
-  return zip_open_fd(open(path, O_RDONLY));
+  int fd = open(path, O_RDONLY);
+  if (fd < 0) {
+    return false;
+  }
+  
+  zipfile_t ret = zip_open_fd(fd);
+  close(fd);
+  return ret;
 }
 
 zipfile_t zip_open_fp(FILE *fp)

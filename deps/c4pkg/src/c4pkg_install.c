@@ -29,11 +29,11 @@
 
 #include "private/remove.h"
 
-#define CALL(fn, arg...) \
-  if (fn) { fn(arg); }
+#define CALL(arg...) \
+  printf(arg)
 
-#define CALLE(fn) \
-  CALL(fn, "%s\n", install_get_error())
+#define CALLE() \
+  CALL("%s\n", install_get_error())
 
 ERROR_BUFFER(install);
 
@@ -41,7 +41,21 @@ static void c4pkg_default_opt(inst_opt_t *opt)
 {
   opt->o_update_when_exists = true;
   opt->o_ignore_dependencies = false;
-  opt->print_fn = printf;
+}
+
+static bool c4pkg_install_git_quiet(const char *repo)
+{
+  char *file = c4pkg_github_download(repo);
+  if (!file) {
+    install_set_error("%s", gitdl_get_error());
+    CALLE();
+    return false;
+  }
+  
+  bool ret = c4pkg_install_file(file);
+  unlink(file);
+  free(file);
+  return ret;
 }
 
 static bool c4pkg_install_fix_permission(package_t pkg)
@@ -257,25 +271,27 @@ bool c4pkg_install_with_opt(inst_opt_t *opt)
     return c4pkg_install(opt->o_src);
   }
   
-  int (*pfn)(const char*, ...) = opt->print_fn;
-  
   if (opt->o_src_length == 0) {
-    install_set_error("Invalid length of o_src");
-    CALLE(pfn);
+    install_set_error("Invalid length of package source");
+    CALLE();
     goto fail;
   }
   
   package_t pkg = package_open_buffer(opt->o_src, opt->o_src_length);
   if (!pkg) {
     install_set_error("Failed to open package buffer: %s", package_get_error());
-    CALLE(pfn);
+    CALLE();
     goto fail;
   }
+  
+  // print info
+  c4pkg_print_package_info(pkg);
+  printf("\n");
   
   zipentry_t data = zip_lookup(pkg->zip, C4PKG_DATA_ZIP);
   if (!data) {
     install_set_error("No '" C4PKG_DATA_ZIP "' was found in zip file");
-    CALLE(pfn);
+    CALLE();
     goto fail;
   }
   
@@ -283,6 +299,7 @@ bool c4pkg_install_with_opt(inst_opt_t *opt)
   char *buffer = (char*) malloc(sizeof(char) * (sz + 1));
   if (!buffer) {
     install_set_error("Internal Error: Failed to allocate memory for '" C4PKG_DATA_ZIP "'");
+    CALLE();
     goto fail;
   }
   
@@ -293,12 +310,14 @@ bool c4pkg_install_with_opt(inst_opt_t *opt)
   char *digest = c4pkg_hash_sha1_string(buffer, sz);
   if (!digest) {
     install_set_error("Failed to generate sha1 checksum");
+    CALLE();
     goto fail;
   }
   
   if (!c4pkg_install_checkpkg(pkg, digest)) {
     free(digest);
     install_set_error("Package validation failed");
+    CALLE();
     goto fail;
   }
   free(digest);
@@ -307,11 +326,12 @@ bool c4pkg_install_with_opt(inst_opt_t *opt)
   zipfile_t data_zip = zip_open_buffer(buffer, sz);
   if (!data_zip) {
     install_set_error("Failed to open decompressed '" C4PKG_DATA_ZIP "' buffer");
+    CALLE();
     goto fail;
   }
   
   if (!c4pkg_install_internal(opt, pkg, data_zip)) {
-    CALLE(pfn);
+    CALLE();
     goto fail_close;
   }
   
@@ -372,16 +392,8 @@ bool c4pkg_install(const char *url)
 
 bool c4pkg_install_git(const char *repo)
 {
-  char *file = c4pkg_github_download(repo);
-  if (!file) {
-    install_set_error("%s", gitdl_get_error());
-    return false;
-  }
-  
-  bool ret = c4pkg_install_file(file);
-  unlink(file);
-  free(file);
-  return ret;
+  CALL("=> Downloading packages from github\n");
+  return c4pkg_install_git_quiet(repo);
 }
 
 bool c4pkg_install_buffer(const char *buffer, size_t bufsz)
@@ -402,7 +414,15 @@ bool c4pkg_install_file(const char *path)
     return false;
   }
   
-  return c4pkg_install_fd(open(path, O_RDONLY));
+  printf("=> Installing %s\n", path);
+  int fd = open(path, O_RDONLY);
+  if (fd < 0) {
+    return false;
+  }
+  
+  bool ret = c4pkg_install_fd(fd);
+  close(fd);
+  return ret;
 }
 
 bool c4pkg_install_fp(FILE *fp)

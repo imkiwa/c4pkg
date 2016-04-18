@@ -200,7 +200,14 @@ pkginfo_t pkginfo_parse_file(const char *path)
     return NULL;
   }
   
-  return pkginfo_parse_fd(open(path, O_RDONLY));
+  int fd = open(path, O_RDONLY);
+  if (fd < 0) {
+    return NULL;
+  }
+  
+  pkginfo_t ret = pkginfo_parse_fd(fd);
+  close(fd);
+  return ret;
 }
 
 pkginfo_t pkginfo_parse_fp(FILE *fp)

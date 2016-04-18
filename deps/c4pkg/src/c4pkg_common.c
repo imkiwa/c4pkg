@@ -22,7 +22,7 @@ void c4pkg_print_package_info(package_t pkg)
 {
   pkginfo_t i = package_get_info(pkg);
   
-  printf("=> Package Query\n");
+  printf("=> Package\n");
   printf(" package: %s\n", i->p_name);
   printf(" description: %s\n", i->p_desc);
   printf(" version: %d.%d.%d\n", i->p_major, i->p_minor, i->p_patch);

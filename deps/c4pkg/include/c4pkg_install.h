@@ -49,12 +49,6 @@ struct c4pkg_install_opt_s
   
   bool o_update_when_exists;
   bool o_ignore_dependencies;
-  
-  /**
-   * if print_fn == NULL,
-   * nothing will be printed during the installation
-   */
-  int (*print_fn)(const char *fmt, ...);
 };
 
 

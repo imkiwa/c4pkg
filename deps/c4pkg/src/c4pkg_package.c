@@ -90,10 +90,17 @@ fail:
 package_t package_open_file(const char *path)
 {
   if (!path) {
-    return NULL;
+    return false;
   }
   
-  return package_open_fd(open(path, O_RDONLY));
+  int fd = open(path, O_RDONLY);
+  if (fd < 0) {
+    return false;
+  }
+  
+  package_t ret = package_open_fd(fd);
+  close(fd);
+  return ret;
 }
 
 package_t package_open_fp(FILE *fp)
