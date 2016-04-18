@@ -1,1 +1,1 @@
--I/data/data/com.n0n3m4.droidc/c4pkg/packages/c4pkg/include -L/data/data/com.n0n3m4.droidc/c4pkg/packages/c4pkg/lib -lc4pkg_net -lc4pkg_curl -lc4pkg_ssl -lc4pkg_crypto -lz -lm -lc4pkg -lc4pkg_zip -lc4pkg_utils -lc4pkg_hash -lcJSON
+-I/data/data/com.n0n3m4.droidc/c4pkg/packages/c4pkg/include -L/data/data/com.n0n3m4.droidc/c4pkg/packages/c4pkg/lib -lm -lc4pkg -lc4pkg_net -lc4pkg_curl -lc4pkg_ssl -lc4pkg_crypto -lz -lc4pkg_zip -lc4pkg_utils -lc4pkg_hash -lcJSON
