@@ -18,6 +18,7 @@
 
 #include <stdlib.h>
 #include <string.h>
+#include <unistd.h>
 
 #include "c4pkg.h"
 #include "c4pkg_hash.h"
@@ -371,8 +372,16 @@ bool c4pkg_install(const char *url)
 
 bool c4pkg_install_git(const char *repo)
 {
-  printf("Internal Error: c4pkg_install_git not supported.\n");
-  return false;
+  char *file = c4pkg_github_download(repo);
+  if (!file) {
+    install_set_error("%s", gitdl_get_error());
+    return false;
+  }
+  
+  bool ret = c4pkg_install_file(file);
+  unlink(file);
+  free(file);
+  return ret;
 }
 
 bool c4pkg_install_buffer(const char *buffer, size_t bufsz)

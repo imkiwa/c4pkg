@@ -16,10 +16,63 @@
  */
 
 
-#include "c4pkg_github.h"
-#include "c4pkg_net.h"
+#include <errno.h>
+#include <string.h>
 
-bool c4pkg_github_download(const char *repo)
+#include "c4pkg_github.h"
+#include "c4pkg_package.h"
+#include "string_utils.h"
+#include "fs_utils.h"
+
+ERROR_BUFFER(gitdl);
+
+char* c4pkg_github_download(const char *repo)
 {
-  return true;
+  if (!repo) {
+    return NULL;
+  }
+  
+  static callback_table_t cbtable = {
+    .print = printf,
+    .notify = NULL,
+    .start = NULL
+  };
+  
+  char *save = NULL;
+  char *url = c4pkg_github_get_package_url(repo);
+  if (!url) {
+    gitdl_set_error("Failed to get package url");
+    return NULL;
+  }
+  
+  const char *basename = c4pkg_net_extract_file_from_url(url);
+  if (!basename) {
+    gitdl_set_error("Failed to extract file name from url");
+    goto fail;
+  }
+  
+  save = string_concat(C4PKG_TMP_PATH, "/", basename, NULL);
+  if (!save) {
+    gitdl_set_error("Internal Error: Failed to generate tmp file path");
+    goto fail;
+  }
+  
+  if (!mkdir_parent(save, 0755)) {
+    gitdl_set_error("Failed to mkdir for %s: %s", save, strerror(errno));
+    goto fail;
+  }
+  
+  if (!c4pkg_net_download(save, url, &cbtable, NULL, 10, true, false)) {
+    gitdl_set_error("Failed to download package");
+    goto fail;
+  }
+  
+  return save;
+
+fail:
+  free(url);
+  if (save) {
+    free(save);
+  }
+  return NULL;
 }

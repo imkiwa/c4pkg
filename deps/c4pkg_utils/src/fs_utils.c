@@ -198,6 +198,11 @@ bool mkdir_parent(const char *cpath, mode_t mode)
   // split path and file name
   *slash = '\0';
   
+  if (access(path, F_OK) == 0) {
+    free(path);
+    return true;
+  }
+  
   // create parent directory
   bool ret = mkdir_recursive(path, mode);
   

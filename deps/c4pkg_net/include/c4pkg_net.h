@@ -19,6 +19,7 @@
 #pragma once
 
 #include <stdbool.h>
+#include <string.h>
 
 typedef struct c4pkg_net_callback_table_s callback_table_t;
 struct c4pkg_net_callback_table_s
@@ -36,6 +37,16 @@ struct c4pkg_net_callback_table_s
   void (*start)(void*);
 };
 
+
+static inline const char* c4pkg_net_extract_file_from_url(const char *url)
+{
+  if (!url) {
+    return NULL;
+  }
+  
+  const char *f = strrchr(url, '/');
+  return f ? f + 1 : NULL;
+}
 
 bool c4pkg_net_download(const char *file, const char *url, callback_table_t *callbacks, void *userdata, long timeout, bool progress, bool force_restart);
 

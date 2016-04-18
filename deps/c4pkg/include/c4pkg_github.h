@@ -20,21 +20,22 @@
 
 #include <string.h>
 #include <stdbool.h>
+
+#include "c4pkg_net.h"
 #include "string_utils.h"
+#include "error_utils.h"
+
+ERROR_BUFFER_DEF(gitdl);
 
 static inline const char* c4pkg_github_repo_name(const char *repo)
 {
-  if (!repo) {
-    return NULL;
-  }
-  
-  const char *name = strrchr(repo, '/');
-  return name ? name + 1 : repo;
+  const char *name = c4pkg_net_extract_file_from_url(repo);
+  return name ? name : repo;
 }
 
-static inline char* c4pkg_github_pkgurl(const char *repo)
+static inline char* c4pkg_github_get_package_url(const char *repo)
 {
-  return repo ? string_concat("https://raw.githubusercontent.com/", repo, "/master/", c4pkg_github_repo_name(repo), ".zip", NULL) : NULL;
+  return repo ? string_concat("https://raw.githubusercontent.com/", repo, "/master/pkgfiles/", c4pkg_github_repo_name(repo), ".zip", NULL) : NULL;
 }
 
-bool c4pkg_github_download(const char *repo);
+char* c4pkg_github_download(const char *repo);

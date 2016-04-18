@@ -27,11 +27,7 @@
 
 #define C4PKG_LIST_PATH C4PKG_DATA "/lists"
 #define C4PKG_PKG_PATH C4PKG_DATA "/packages"
-
-#define C4PKG_PKG_INCLUDE_PATH C4PKG_PKG_PATH "/include"
-#define C4PKG_PKG_LIB_PATH C4PKG_PKG_PATH "/lib"
-#define C4PKG_PKG_BIN_PATH C4PKG_PKG_PATH "/bin"
-#define C4PKG_PKG_DOCS_PATH C4PKG_PKG_PATH "/docs"
+#define C4PKG_TMP_PATH C4PKG_DATA "/tmp"
 
 #define C4PKG_DATA_ZIP "data.zip"
 #define C4PKG_MANIFEST "manifest.json"

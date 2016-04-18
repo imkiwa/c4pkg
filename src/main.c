@@ -21,6 +21,24 @@
 
 #include "c4pkg.h"
 
+int do_query(const char *name, bool all)
+{
+  int flags = QUERY_MANIFEST;
+  if (all) {
+    flags = QUERY_ALL;
+  }
+  
+  package_t pkg = c4pkg_query(name, flags);
+  if (!pkg) {
+    printf("%s\n", query_get_error());
+    return 1;
+  }
+    
+  c4pkg_print_package_info(pkg);
+  package_close(pkg);
+  return 0;
+}
+
 int main(int argc, char **argv)
 {
   if (argc == 1) {
@@ -28,21 +46,21 @@ int main(int argc, char **argv)
   }
   
   if (strcmp("-Q", argv[1]) == 0) {
-    package_t pkg = c4pkg_query(argv[2], QUERY_ALL);
-    if (!pkg) {
-      printf("Failed to query %s: %s\n", argv[2], query_get_error());
-      return 1;
-    }
-    
-    c4pkg_print_package_info(pkg);
-    package_close(pkg);
-    return 0;
+    return do_query(argv[2], false);
+  
+  } else if (strcmp("-Qa", argv[1]) == 0) {
+    return do_query(argv[2], true);
   
   } else if (strcmp("-R", argv[1]) == 0) {
     return c4pkg_remove(argv[2]) ? 0 : 1;
     
   } else if (strcmp("-S", argv[1]) == 0) {
     if (!c4pkg_install_file(argv[2])) {
+      printf("%s\n", install_get_error());
+    }
+  
+  } else if (strcmp("-Sg", argv[1]) == 0) {
+    if (!c4pkg_install_git(argv[2])) {
       printf("%s\n", install_get_error());
     }
   }
