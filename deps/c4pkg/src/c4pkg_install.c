@@ -21,9 +21,12 @@
 
 #include "c4pkg.h"
 #include "c4pkg_hash.h"
+#include "c4pkg_github.h"
 #include "buffer_utils.h"
 #include "fs_utils.h"
 #include "string_utils.h"
+
+#include "private/remove.h"
 
 #define CALL(fn, arg...) \
   if (fn) { fn(arg); }
@@ -35,15 +38,28 @@ ERROR_BUFFER(install);
 
 static void c4pkg_default_opt(inst_opt_t *opt)
 {
-  opt->o_inst_dir = C4PKG_PKG_PATH;
   opt->o_update_when_exists = true;
   opt->o_ignore_dependencies = false;
   opt->print_fn = printf;
 }
 
-static void c4pkg_install_fix_permission()
+static bool c4pkg_install_fix_permission(package_t pkg)
 {
-  chmod_recursive(C4PKG_PKG_BIN_PATH, 0755, false);
+  char *inst_dir = c4pkg_get_install_dir(package_get_name(pkg));
+  if (!inst_dir) {
+    return false;
+  }
+  
+  char *bin = string_concat(inst_dir, "/bin", NULL);
+  free(inst_dir);
+  
+  if (!bin) {
+    return false;
+  }
+  
+  chmod_recursive(bin, 0755, false);
+  free(bin);
+  return true;
 }
 
 static bool c4pkg_install_checkpkg(package_t pkg, const char *digest)
@@ -93,7 +109,7 @@ fail:
 
 static bool c4pkg_install_rollback(package_t pkg)
 {
-  return true;
+  return c4pkg_remove_package_files(pkg);
 }
 
 static bool c4pkg_install_internal(inst_opt_t *opt, package_t pkg, zipfile_t data_zip)
@@ -120,13 +136,19 @@ static bool c4pkg_install_internal(inst_opt_t *opt, package_t pkg, zipfile_t dat
   size_t zsz = 0;
   bool write = true;
   
+  char *inst_dir = c4pkg_get_install_dir(package_get_name(pkg));
+  if (!inst_dir) {
+    install_set_error("Internal Error: Failed to get install dir");
+    goto fail;
+  }
+  
   while (zip_foreach(data_zip, (void**) &e)) {
     zname = zipentry_get_name(e);
     zsz = strlen(zname);
     write = true;
     
     if (zname[zsz - 1] == '/') {
-      char *n = string_concat(opt->o_inst_dir, "/", zname, NULL);
+      char *n = string_concat(inst_dir, "/", zname, NULL);
       if (!n) {
         install_set_error("Internal Error: Failed to concat string");
         goto rollback;
@@ -150,7 +172,7 @@ static bool c4pkg_install_internal(inst_opt_t *opt, package_t pkg, zipfile_t dat
       info->p_file_count++;
     }
     
-    if (!zipentry_extract_to(e, opt->o_inst_dir)) {
+    if (!zipentry_extract_to(e, inst_dir)) {
       install_set_error("Internal Error: Failed to extract '%s'", zname);
       goto rollback;
     }
@@ -175,7 +197,10 @@ static bool c4pkg_install_internal(inst_opt_t *opt, package_t pkg, zipfile_t dat
   }
   
   // set executable permission for binaries
-  c4pkg_install_fix_permission();
+  if (!c4pkg_install_fix_permission(pkg)) {
+    install_set_error("Failed to set permissions for %s", package_get_name(pkg));
+    goto rollback_free;
+  }
   
   return true;
 
@@ -214,7 +239,7 @@ bool c4pkg_install_with_opt(inst_opt_t *opt)
     return false;
   }
   
-  if (!opt || !opt->o_src || !opt->o_inst_dir) {
+  if (!opt || !opt->o_src) {
     return false;
   }
   

@@ -40,6 +40,15 @@ char* c4pkg_get_list_file(const char *name)
   return string_concat(C4PKG_LIST_PATH, "/", name, "/", C4PKG_LIST_FILE, NULL);
 }
 
+char* c4pkg_get_install_dir(const char *name)
+{
+  if (!name) {
+    return NULL;
+  }
+  
+  return string_concat(C4PKG_PKG_PATH, "/", name, NULL);
+}
+
 char* c4pkg_get_manifest_file(const char *name)
 {
   if (!name) {

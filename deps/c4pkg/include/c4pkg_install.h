@@ -31,12 +31,7 @@ ERROR_BUFFER_DEF(install);
 typedef struct c4pkg_install_opt_s inst_opt_t;
 
 struct c4pkg_install_opt_s
-{
-  /**
-   * install location
-   */
-  char *o_inst_dir;
-  
+{ 
   /**
    * package source
    *

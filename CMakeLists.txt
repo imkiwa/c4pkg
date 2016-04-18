@@ -61,7 +61,7 @@ install (
 )
 
 install (
-  FILES flags.txt
+  FILES pkgfiles/flags.txt
   
   DESTINATION .
 )

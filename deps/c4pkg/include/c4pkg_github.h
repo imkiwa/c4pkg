@@ -1,8 +1,4 @@
-#!/system/bin/bash
-
-source $(dirname $(readlink -f $0))/common.sh
-
-COPYRIGHT='/**
+/**
  * Copyright (C) 2016  apollo-opensource
  *
  * This program is free software: you can redistribute it and/or modify
@@ -18,34 +14,27 @@ COPYRIGHT='/**
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
-'
 
-function process-file()
+
+#pragma once
+
+#include <string.h>
+#include <stdbool.h>
+#include "string_utils.h"
+
+static inline const char* c4pkg_github_repo_name(const char *repo)
 {
-  local f="$1"
+  if (!repo) {
+    return NULL;
+  }
   
-  local fl="$(head -n1 $f)"
-  if [[ "$fl" == "/**" ]];then
-    return
-  fi
-  
-  echo "=> Adding Copyright for $f"
-  echo -e "$COPYRIGHT\n" > "$f.tmp"
-  cat "$f" >> "$f.tmp"
-  mv "$f.tmp" "$f"
+  const char *name = strrchr(repo, '/');
+  return name ? name + 1 : repo;
 }
 
-function add-copyright()
+static inline char* c4pkg_github_pkgurl(const char *repo)
 {
-  while [[ "$1" ]];do
-    local dir="$1"; shift
-    for f in $(find "$dir" -name "*.c" -o -name "*.h");do
-      process-file "$f"
-    done
-  done
+  return repo ? string_concat("https://raw.githubusercontent.com/", repo, "/master/", c4pkg_github_repo_name(repo), ".zip", NULL) : NULL;
 }
 
-add-copyright \
-    deps/c4pkg* \
-    src \
-    include
+bool c4pkg_github_download(const char *repo);

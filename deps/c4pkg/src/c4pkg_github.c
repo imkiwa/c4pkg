@@ -1,8 +1,4 @@
-#!/system/bin/bash
-
-source $(dirname $(readlink -f $0))/common.sh
-
-COPYRIGHT='/**
+/**
  * Copyright (C) 2016  apollo-opensource
  *
  * This program is free software: you can redistribute it and/or modify
@@ -18,34 +14,12 @@ COPYRIGHT='/**
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
-'
 
-function process-file()
+
+#include "c4pkg_github.h"
+#include "c4pkg_net.h"
+
+bool c4pkg_github_download(const char *repo)
 {
-  local f="$1"
-  
-  local fl="$(head -n1 $f)"
-  if [[ "$fl" == "/**" ]];then
-    return
-  fi
-  
-  echo "=> Adding Copyright for $f"
-  echo -e "$COPYRIGHT\n" > "$f.tmp"
-  cat "$f" >> "$f.tmp"
-  mv "$f.tmp" "$f"
+  return true;
 }
-
-function add-copyright()
-{
-  while [[ "$1" ]];do
-    local dir="$1"; shift
-    for f in $(find "$dir" -name "*.c" -o -name "*.h");do
-      process-file "$f"
-    done
-  done
-}
-
-add-copyright \
-    deps/c4pkg* \
-    src \
-    include

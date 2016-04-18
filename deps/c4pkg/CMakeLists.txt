@@ -7,6 +7,7 @@ add_library  (c4pkg
     src/c4pkg_list.c
     src/c4pkg_query.c
     src/c4pkg_schema.c
+    src/c4pkg_github.c
   )
 
 target_link_libraries (c4pkg

@@ -29,6 +29,8 @@ char* c4pkg_get_list_dir(const char *name);
 
 char* c4pkg_get_list_file(const char *name);
 
+char* c4pkg_get_install_dir(const char *name);
+
 char* c4pkg_get_manifest_file(const char *name);
 
 bool c4pkg_list_dump_file(FILE *to, package_t pkg);

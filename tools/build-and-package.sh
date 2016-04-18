@@ -2,6 +2,8 @@
 
 source $(dirname $(readlink -f $0))/common.sh
 
+tools/add-copyright.sh
+
 mkdir -p build
 cd build
 
@@ -10,4 +12,4 @@ make -j4
 make install
 
 cd ..
-tools/make-package.sh pkgfiles $PWD/c4pkg.zip
+tools/make-package.sh pkgfiles $PWD/pkgfiles/c4pkg.zip
