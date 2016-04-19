@@ -18,7 +18,21 @@
 
 #pragma once
 
+#include <stdio.h>
+#include <unistd.h>
 #include "c4pkg_package.h"
+
+static inline bool c4pkg_check_root()
+{
+  return geteuid() == 0 || getuid() == 0;
+}
+
 
 void c4pkg_print_package_info(package_t pkg);
 
+bool c4pkg_set_owner_c4droid();
+
+
+#define c4pkg_printf(fmt, ...) c4pkg_fprintf(stdout, fmt, ##__VA_ARGS__)
+
+int c4pkg_fprintf(FILE *fp, const char *fmt, ...);

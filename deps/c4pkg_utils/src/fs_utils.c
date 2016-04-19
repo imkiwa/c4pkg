@@ -123,6 +123,60 @@ fail:
   return false;
 }
 
+bool chown_recursive(const char *path, uid_t owner, uid_t group, bool include_self)
+{
+  if (!path) {
+    return false;
+  }
+  
+  if (include_self && chown(path, owner, group) != 0) {
+    return false;
+  }
+  
+  DIR *dir;
+  struct dirent *e;
+  dir = opendir(path);
+  if (!dir) {
+    return false;
+  }
+  
+  char *item = NULL;
+  while ((e = readdir(dir)) != NULL) {
+    if (!strcmp(e->d_name, ".") || !strcmp(e->d_name, "..")) {
+      continue;
+    }
+    
+    item = string_concat(path, "/", e->d_name, NULL);
+    if (!item) {
+      goto fail;
+    }
+    
+    if (e->d_type == DT_REG) {
+      if (chown(item, owner, group) != 0) {
+        goto fail;
+      }
+    
+    } else if (e->d_type == DT_DIR) {
+      if (chown_recursive(item, owner, group, true) != 0) {
+        goto fail;
+      }
+    }
+    
+    free(item);
+    item = NULL;
+  }
+  
+  closedir(dir);
+  return true;
+
+fail:
+  if (item) {
+    free(item);
+  }
+  closedir(dir);
+  return false;
+}
+
 bool unlink_recursive(const char *path, bool include_self)
 {
   if (!path) {

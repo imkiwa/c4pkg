@@ -23,6 +23,7 @@
 #include "c4pkg_remove.h"
 #include "c4pkg_query.h"
 #include "c4pkg_list.h"
+#include "c4pkg_common.h"
 #include "fs_utils.h"
 #include "string_utils.h"
 
@@ -80,7 +81,7 @@ bool c4pkg_remove(const char *name)
     goto fail;
   }
   
-  printf("=> Package '%s' was successfully removed\n", name);
+  c4pkg_printf("Package '%s' was successfully removed\n", name);
   
   package_close(pkg);
   return true;

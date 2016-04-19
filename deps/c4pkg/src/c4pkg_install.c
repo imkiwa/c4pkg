@@ -18,6 +18,7 @@
 
 #include <stdlib.h>
 #include <string.h>
+#include <errno.h>
 #include <unistd.h>
 
 #include "c4pkg.h"
@@ -29,8 +30,13 @@
 
 #include "private/remove.h"
 
+#ifdef USE_C4PKG_PRINT
+#  define printf c4pkg_printf
+#  define fprintf c4pkg_fprintf
+#endif
+
 #define CALL(arg...) \
-  printf(arg)
+  fprintf(stderr, arg)
 
 #define CALLE() \
   CALL("%s\n", install_get_error())
@@ -212,6 +218,12 @@ static bool c4pkg_install_internal(inst_opt_t *opt, package_t pkg, zipfile_t dat
     goto rollback_free;
   }
   
+  if (!c4pkg_set_owner_c4droid()) {
+    install_set_error("Failed to set owner/group for %s", package_get_name(pkg));
+    CALLE();
+    goto rollback_free;
+  }
+  
   // set executable permission for binaries
   if (!c4pkg_install_fix_permission(pkg)) {
     install_set_error("Failed to set permissions for %s", package_get_name(pkg));
@@ -239,7 +251,7 @@ rollback:
     }
     
     sec += 10;
-    fprintf(stderr, "Rollback failed, retrying in %d seconds. Use Ctrl-C to force exit.\n", sec);
+    c4pkg_fprintf(stderr, "Rollback failed, retrying in %d seconds.\n", sec);
     sleep(sec);
   }
 
@@ -250,9 +262,16 @@ fail:
 bool c4pkg_install_with_opt(inst_opt_t *opt)
 {
   if (c4pkg_check_root()) {
-    install_set_error("You should not run this program as root.");
-    fprintf(stderr, "%s\n", install_get_error());
-    return false;
+    c4pkg_fprintf(stderr, "Warning: You are running this program as ROOT!\n");
+    c4pkg_fprintf(stderr, "Do you know what you are doing? [Y/n] ");
+    
+    int c = getchar();
+    if (c != 'Y' && c != 'y') {
+      fprintf(stderr, "Aborting\n");
+      return false;
+    }
+    
+    c4pkg_fprintf(stderr, "Run in root mode\n");
   }
   
   if (!opt || !opt->o_src) {
@@ -286,8 +305,7 @@ bool c4pkg_install_with_opt(inst_opt_t *opt)
   }
   
   // print info
-  c4pkg_print_package_info(pkg);
-  printf("\n");
+  c4pkg_printf("Installing %s\n", package_get_name(pkg));
   
   zipentry_t data = zip_lookup(pkg->zip, C4PKG_DATA_ZIP);
   if (!data) {
@@ -336,7 +354,7 @@ bool c4pkg_install_with_opt(inst_opt_t *opt)
     goto fail_close;
   }
   
-  printf(":: Package '%s' was successfully installed\n", package_get_name(pkg));
+  c4pkg_printf("Package '%s' was successfully installed\n", package_get_name(pkg));
   
   zip_close(data_zip);
   package_close(pkg);
@@ -393,7 +411,7 @@ bool c4pkg_install(const char *url)
 
 bool c4pkg_install_git(const char *repo)
 {
-  CALL(":: Downloading packages from github\n");
+  c4pkg_printf("Downloading packages from github\n");
   return c4pkg_install_git_quiet(repo);
 }
 
@@ -415,7 +433,6 @@ bool c4pkg_install_file(const char *path)
     return false;
   }
   
-  printf(":: Installing %s\n", path);
   int fd = open(path, O_RDONLY);
   if (fd < 0) {
     return false;
